@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planejamento Eleitoral 2026 — Leatrice Bez</title>
+<style>
+  /* ===== RESET & BASE ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, 'Segoe UI', Arial, sans-serif;
+    background: #FFFFFF;
+    color: #073F67;
+    min-height: 100vh;
+  }
+
+  /* ===== CORES ===== */
+  :root {
+    --laranja: #F58220;
+    --azul: #0878B9;
+    --azul-escuro: #073F67;
+    --fundo-alternado: #EAF5FB;
+    --linha-div: #DCE7EC;
+    --creme: #FFF1E5;
+    --cinza-linha: #8AA2B0;
+    --branco: #FFFFFF;
+  }
+
+  /* ===== HEADER FIXO ===== */
+  #header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: #FFFFFF;
+    border-bottom: 3px solid var(--laranja);
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  #header h1 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--azul-escuro);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  #header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .pilula-candidata {
+    background: var(--azul);
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 5px 14px;
+    border-radius: 20px;
+  }
+  #status-salvo {
+    font-size: 0.72rem;
+    color: var(--cinza-linha);
+    min-width: 100px;
+    text-align: right;
+  }
+
+  /* ===== CONTEÚDO PRINCIPAL ===== */
+  #main {
+    margin-top: 62px;
+    padding: 20px 24px 40px;
+  }
+
+  /* ===== BARRA DE AÇÕES ===== */
+  #barra-acoes {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .btn {
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 7px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-azul { background: var(--azul); color: #fff; }
+  .btn-laranja { background: var(--laranja); color: #fff; }
+  .btn-outline {
+    background: transparent;
+    color: var(--azul-escuro);
+    border: 1.5px solid var(--linha-div);
+  }
+  .btn-outline:hover { background: var(--fundo-alternado); }
+  .btn-voltar {
+    background: var(--fundo-alternado);
+    border: 1.5px solid var(--linha-div);
+    border-radius: 6px;
+    color: var(--azul);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s;
+  }
+  .btn-voltar:hover { background: var(--linha-div); text-decoration: none; }
+
+  /* ===== GRADE DA VISÃO GERAL ===== */
+  #visao-geral { display: none; }
+  #visao-geral.ativo { display: block; }
+
+  .grade-semanas {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  /* ===== CARTÃO DE SEMANA ===== */
+  .cartao-semana {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--linha-div);
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+  }
+  .cartao-semana:hover { box-shadow: 0 4px 16px rgba(7,63,103,0.12); }
+
+  .cartao-header {
+    background: var(--azul);
+    color: #fff;
+    padding: 10px 12px 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    height: 90px;
+  }
+  .circulo-sem {
+    background: var(--laranja);
+    border-radius: 50%;
+    width: 42px; height: 42px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    flex-shrink: 0;
+    line-height: 1.1;
+    margin-top: 2px;
+  }
+  .circulo-sem .label-sem {
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .circulo-sem .num-sem {
+    font-size: 1.1rem;
+    font-weight: 800;
+  }
+  .cartao-header-info { flex: 1; }
+  .cartao-header-titulo {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.9;
+  }
+  .cartao-header-periodo {
+    font-size: 0.68rem;
+    opacity: 0.8;
+    margin-top: 2px;
+  }
+  .pilula-contador {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+
+  /* ===== LINHAS DE DIA NO CARTÃO ===== */
+  .lista-dias { }
+  .linha-dia {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--linha-div);
+    min-height: 52px;
+  }
+  .linha-dia:last-child { border-bottom: none; }
+  .linha-dia:nth-child(even) { background: var(--fundo-alternado); }
+  .linha-dia:nth-child(odd) { background: #fff; }
+
+  .badge-dia {
+    background: var(--laranja);
+    color: #fff;
+    border-radius: 6px;
+    width: 36px;
+    min-width: 36px;
+    padding: 3px 0;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.2;
+  }
+  .badge-dia .abrev { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.05em; }
+  .badge-dia .num-dia { font-size: 0.9rem; font-weight: 800; }
+
+  .resumo-dia { flex: 1; overflow: hidden; }
+  .resumo-cidade {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--azul-escuro);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .resumo-coord, .resumo-ativ {
+    font-size: 0.68rem;
+    color: var(--cinza-linha);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .resumo-vazio {
+    font-size: 0.72rem;
+    color: var(--cinza-linha);
+    font-style: italic;
+  }
+
+  /* ===== CARTÃO ELEIÇÃO ===== */
+  .cartao-eleicao {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid var(--laranja);
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+    background: var(--creme);
+  }
+  .cartao-eleicao:hover { box-shadow: 0 4px 16px rgba(245,130,32,0.2); }
+
+  .cartao-eleicao-header {
+    background: var(--laranja);
+    color: #fff;
+    padding: 10px 14px 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .circulo-el {
+    background: #fff;
+    color: var(--laranja);
+    border-radius: 50%;
+    width: 42px; height: 42px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    flex-shrink: 0;
+    line-height: 1.1;
+  }
+  .circulo-el .label-el { font-size: 0.55rem; font-weight: 700; letter-spacing: 0.06em; }
+  .circulo-el .num-el { font-size: 1rem; font-weight: 800; }
+  .cartao-eleicao-body { padding: 10px 14px; }
+  .campo-el-resumo {
+    margin-bottom: 6px;
+  }
+  .campo-el-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--laranja);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .campo-el-valor {
+    font-size: 0.78rem;
+    color: var(--azul-escuro);
+    font-weight: 600;
+  }
+  .campo-el-vazio {
+    font-size: 0.72rem;
+    color: var(--cinza-linha);
+    font-style: italic;
+  }
+
+  /* ===== TELA DE SEMANA ===== */
+  #tela-semana { display: none; }
+  #tela-semana.ativo { display: block; }
+
+  .semana-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    gap: 8px;
+  }
+  .semana-nav h2 {
+    font-size: 1rem;
+    color: var(--azul-escuro);
+    font-weight: 700;
+    text-align: center;
+    flex: 1;
+  }
+  .semana-nav h2 span {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--cinza-linha);
+    margin-top: 2px;
+  }
+
+  /* ===== BLOCOS DE DIA (TELA SEMANA) ===== */
+  .bloco-dia {
+    display: flex;
+    border: 1px solid var(--linha-div);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .faixa-lateral {
+    background: var(--laranja);
+    color: #fff;
+    width: 68px;
+    min-width: 68px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 4px;
+    text-align: center;
+    line-height: 1.3;
+    flex-shrink: 0;
+  }
+  .faixa-lateral .dia-semana {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .faixa-lateral .dia-data {
+    font-size: 0.78rem;
+    font-weight: 800;
+    margin-top: 4px;
+  }
+  .faixa-lateral .dia-mes {
+    font-size: 0.58rem;
+    opacity: 0.85;
+    margin-top: 1px;
+  }
+
+  .bloco-campos {
+    flex: 1;
+    padding: 14px 16px;
+    background: #fff;
+    position: relative;
+  }
+  .campo-grupo { margin-bottom: 12px; }
+  .campo-grupo:last-of-type { margin-bottom: 0; }
+  .campo-label {
+    display: block;
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: var(--azul-escuro);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .campo-input, .campo-textarea {
+    width: 100%;
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: var(--azul-escuro);
+    border: none;
+    border-bottom: 1.5px solid var(--cinza-linha);
+    border-radius: 0;
+    background: transparent;
+    padding: 4px 0;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .campo-input:focus, .campo-textarea:focus {
+    border-bottom-color: var(--azul);
+  }
+  .campo-textarea {
+    resize: none;
+    overflow: hidden;
+    min-height: 30px;
+    line-height: 1.5;
+  }
+  .btn-limpar-dia {
+    position: absolute;
+    top: 10px; right: 12px;
+    font-family: inherit;
+    font-size: 0.65rem;
+    color: var(--cinza-linha);
+    background: none;
+    border: 1px solid var(--linha-div);
+    border-radius: 4px;
+    padding: 3px 8px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .btn-limpar-dia:hover { color: #c0392b; border-color: #c0392b; }
+
+  /* ===== TELA ELEIÇÃO ===== */
+  #tela-eleicao { display: none; }
+  #tela-eleicao.ativo { display: block; }
+
+  .bloco-eleicao {
+    border: 2px solid var(--laranja);
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .bloco-eleicao-header {
+    background: var(--laranja);
+    color: #fff;
+    padding: 14px 20px;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .bloco-eleicao-campos {
+    background: var(--creme);
+    padding: 20px;
+  }
+
+  /* ===== RODAPÉ ===== */
+  #rodape {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(255,255,255,0.95);
+    border-top: 1px solid var(--linha-div);
+    padding: 6px 24px;
+    font-size: 0.7rem;
+    color: var(--cinza-linha);
+    display: flex;
+    justify-content: flex-end;
+    backdrop-filter: blur(4px);
+  }
+
+  /* ===== IMPRESSÃO ===== */
+  @media print {
+    @page { size: 1189mm 841mm landscape; margin: 12mm; }
+    #header { position: static; box-shadow: none; border-bottom: 3px solid var(--laranja); }
+    #barra-acoes, #rodape, .btn-voltar, .btn-limpar-dia { display: none !important; }
+    #visao-geral { display: block !important; }
+    #tela-semana, #tela-eleicao { display: none !important; }
+    .cartao-semana, .cartao-eleicao { cursor: default; break-inside: avoid; }
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .grade-semanas { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    #main { margin-top: 0; padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER FIXO -->
+<header id="header">
+  <h1>Planejamento Eleitoral 2026</h1>
+  <div id="header-right">
+    <span id="status-salvo"></span>
+    <span class="pilula-candidata">Leatrice Bez 15104</span>
+  </div>
+</header>
+
+<!-- CONTEÚDO PRINCIPAL -->
+<div id="main">
+
+  <!-- ===== VISÃO GERAL ===== -->
+  <div id="visao-geral" class="ativo">
+    <div id="barra-acoes">
+      <button class="btn btn-azul" onclick="exportarBackup()">⬇ Exportar backup</button>
+      <label class="btn btn-outline" style="cursor:pointer">
+        ⬆ Importar backup
+        <input type="file" accept=".json" style="display:none" onchange="importarBackup(event)">
+      </label>
+      <button class="btn btn-outline" id="btn-conectar" style="display:none" onclick="conectarArquivo()">🔗 Conectar arquivo de dados</button>
+      <button class="btn btn-laranja" onclick="imprimirPlanner()">🖨 Imprimir</button>
+    </div>
+    <div class="grade-semanas" id="grade-semanas"></div>
+  </div>
+
+  <!-- ===== TELA SEMANA ===== -->
+  <div id="tela-semana">
+    <div style="display:flex; align-items:center; margin-bottom:16px; gap:12px;">
+      <button class="btn-voltar" onclick="voltarVisaoGeral()">← Voltar para a visão geral</button>
+    </div>
+    <div class="semana-nav">
+      <button class="btn btn-outline" id="btn-sem-ant" onclick="navegarSemana(-1)">‹ Semana anterior</button>
+      <h2 id="titulo-semana">Semana <span id="periodo-semana"></span></h2>
+      <button class="btn btn-outline" id="btn-prox-sem" onclick="navegarSemana(1)">Próxima semana ›</button>
+    </div>
+    <div id="blocos-semana"></div>
+  </div>
+
+  <!-- ===== TELA ELEIÇÃO ===== -->
+  <div id="tela-eleicao">
+    <div style="display:flex; align-items:center; margin-bottom:16px; gap:12px;">
+      <button class="btn-voltar" onclick="voltarVisaoGeral()">← Voltar para a visão geral</button>
+    </div>
+    <div class="bloco-eleicao">
+      <div class="bloco-eleicao-header">🗳 Dia da Eleição — 4 de outubro de 2026 (domingo)</div>
+      <div class="bloco-eleicao-campos" id="campos-eleicao"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- RODAPÉ -->
+<div id="rodape">
+  <span id="texto-rodape">—</span>
+</div>
+
+<script>
+// ===================================================
+// DADOS DAS SEMANAS
+// ===================================================
+const SEMANAS = [
+  { num: 1, periodo: '16 a 22 de agosto de 2026',       inicio: '2026-08-16' },
+  { num: 2, periodo: '23 a 29 de agosto de 2026',        inicio: '2026-08-23' },
+  { num: 3, periodo: '30 de agosto a 5 de setembro de 2026', inicio: '2026-08-30' },
+  { num: 4, periodo: '6 a 12 de setembro de 2026',       inicio: '2026-09-06' },
+  { num: 5, periodo: '13 a 19 de setembro de 2026',      inicio: '2026-09-13' },
+  { num: 6, periodo: '20 a 26 de setembro de 2026',      inicio: '2026-09-20' },
+  { num: 7, periodo: '27 de setembro a 3 de outubro de 2026', inicio: '2026-09-27' },
+];
+
+const ABREVS = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
+const DIAS_SEMANA = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+const MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const MESES_EXTENSO = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+
+const CAMPOS_ELEICAO = [
+  { key: 'cidadeBase',           label: 'Cidade base' },
+  { key: 'coordenador',          label: 'Coordenador responsável' },
+  { key: 'equipe',               label: 'Equipe / Apoio' },
+  { key: 'horarioDeslocamento',  label: 'Horário de deslocamento' },
+  { key: 'observacoes',          label: 'Observações' },
+];
+
+// Gera lista de datas de uma semana (7 dias a partir do início)
+function datasDaSemana(isoInicio) {
+  const dias = [];
+  const base = new Date(isoInicio + 'T12:00:00Z');
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(base);
+    d.setUTCDate(d.getUTCDate() + i);
+    dias.push(d.toISOString().slice(0, 10));
+  }
+  return dias;
+}
+
+// ===================================================
+// ESTADO E PERSISTÊNCIA
+// ===================================================
+const CHAVE_LS = 'planner_leatrice_2026';
+let fileHandle = null;
+let saveTimer = null;
+let estado = carregarEstado();
+
+function carregarEstado() {
+  try {
+    const raw = localStorage.getItem(CHAVE_LS);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return { versao: 1, atualizadoEm: new Date().toISOString(), dias: {}, eleicao: {} };
+}
+
+function salvarEstado() {
+  estado.atualizadoEm = new Date().toISOString();
+  localStorage.setItem(CHAVE_LS, JSON.stringify(estado));
+  if (fileHandle) salvarArquivoConectado();
+  atualizarStatusSalvo();
+}
+
+function atualizarStatusSalvo() {
+  const agora = new Date();
+  const hh = String(agora.getHours()).padStart(2,'0');
+  const mm = String(agora.getMinutes()).padStart(2,'0');
+  document.getElementById('status-salvo').textContent = `Salvo às ${hh}:${mm}`;
+}
+
+function agendarSalvamento() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(salvarEstado, 400);
+}
+
+// ===================================================
+// NAVEGAÇÃO
+// ===================================================
+let semanaAtual = 0;
+let telaAtiva = 'visao-geral';
+
+function mostrarTela(tela) {
+  document.getElementById('visao-geral').classList.remove('ativo');
+  document.getElementById('tela-semana').classList.remove('ativo');
+  document.getElementById('tela-eleicao').classList.remove('ativo');
+  document.getElementById(tela).classList.add('ativo');
+  telaAtiva = tela;
+}
+
+function abrirSemana(idx) {
+  semanaAtual = idx;
+  renderizarTelaSemana();
+  mostrarTela('tela-semana');
+  window.scrollTo(0, 0);
+}
+
+function abrirEleicao() {
+  renderizarTelaEleicao();
+  mostrarTela('tela-eleicao');
+  window.scrollTo(0, 0);
+}
+
+function voltarVisaoGeral() {
+  renderizarVisaoGeral();
+  mostrarTela('visao-geral');
+  window.scrollTo(0, 0);
+}
+
+function navegarSemana(delta) {
+  const novo = semanaAtual + delta;
+  if (novo < 0 || novo >= SEMANAS.length) return;
+  semanaAtual = novo;
+  renderizarTelaSemana();
+  window.scrollTo(0, 0);
+}
+
+// Esc volta para visão geral
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && telaAtiva !== 'visao-geral') voltarVisaoGeral();
+});
+
+// ===================================================
+// VISÃO GERAL
+// ===================================================
+function renderizarVisaoGeral() {
+  const grade = document.getElementById('grade-semanas');
+  grade.innerHTML = '';
+
+  SEMANAS.forEach((sem, idx) => {
+    const datas = datasDaSemana(sem.inicio);
+    const preenchidos = datas.filter(d => {
+      const dia = estado.dias[d];
+      return dia && (dia.cidade || dia.coordenador || dia.atividade);
+    }).length;
+
+    const cartao = document.createElement('div');
+    cartao.className = 'cartao-semana';
+    cartao.onclick = () => abrirSemana(idx);
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'cartao-header';
+    header.innerHTML = `
+      <div class="circulo-sem">
+        <span class="label-sem">SEM</span>
+        <span class="num-sem">${sem.num}</span>
+      </div>
+      <div class="cartao-header-info">
+        <div class="cartao-header-titulo">Roteiro Semanal</div>
+        <div class="cartao-header-periodo">${sem.periodo}</div>
+      </div>
+      <div class="pilula-contador">${preenchidos}/7 dias</div>
+    `;
+    cartao.appendChild(header);
+
+    // Linhas de dias
+    const lista = document.createElement('div');
+    lista.className = 'lista-dias';
+    datas.forEach((dataIso) => {
+      const d = new Date(dataIso + 'T12:00:00Z');
+      const abrev = ABREVS[d.getUTCDay()];
+      const numDia = d.getUTCDate();
+      const diaDados = estado.dias[dataIso] || {};
+      const temConteudo = diaDados.cidade || diaDados.coordenador || diaDados.atividade;
+
+      const linha = document.createElement('div');
+      linha.className = 'linha-dia';
+      linha.innerHTML = `
+        <div class="badge-dia">
+          <div class="abrev">${abrev}</div>
+          <div class="num-dia">${numDia}</div>
+        </div>
+        <div class="resumo-dia">
+          ${temConteudo ? `
+            ${diaDados.cidade ? `<div class="resumo-cidade">${esc(diaDados.cidade)}</div>` : ''}
+            ${diaDados.coordenador ? `<div class="resumo-coord">${esc(diaDados.coordenador)}</div>` : ''}
+            ${diaDados.atividade ? `<div class="resumo-ativ">${esc(diaDados.atividade)}</div>` : ''}
+          ` : '<div class="resumo-vazio">— sem definição —</div>'}
+        </div>
+      `;
+      lista.appendChild(linha);
+    });
+    cartao.appendChild(lista);
+    grade.appendChild(cartao);
+  });
+
+  // Cartão da eleição
+  const el = estado.eleicao || {};
+  const temEl = CAMPOS_ELEICAO.some(c => el[c.key]);
+  const cartaoEl = document.createElement('div');
+  cartaoEl.className = 'cartao-eleicao';
+  cartaoEl.onclick = abrirEleicao;
+
+  const headerEl = document.createElement('div');
+  headerEl.className = 'cartao-eleicao-header';
+  headerEl.innerHTML = `
+    <div class="circulo-el">
+      <span class="label-el">4/OUT</span>
+      <span class="num-el">🗳</span>
+    </div>
+    <div class="cartao-header-info" style="color:#fff">
+      <div class="cartao-header-titulo">Dia da Eleição</div>
+      <div class="cartao-header-periodo">4 de outubro de 2026 • Domingo</div>
+    </div>
+  `;
+  cartaoEl.appendChild(headerEl);
+
+  const bodyEl = document.createElement('div');
+  bodyEl.className = 'cartao-eleicao-body';
+  if (temEl) {
+    CAMPOS_ELEICAO.forEach(c => {
+      if (!el[c.key]) return;
+      const div = document.createElement('div');
+      div.className = 'campo-el-resumo';
+      div.innerHTML = `<div class="campo-el-label">${esc(c.label)}</div><div class="campo-el-valor">${esc(el[c.key])}</div>`;
+      bodyEl.appendChild(div);
+    });
+  } else {
+    bodyEl.innerHTML = '<div class="campo-el-vazio">— clique para preencher —</div>';
+  }
+  cartaoEl.appendChild(bodyEl);
+  grade.appendChild(cartaoEl);
+}
+
+// ===================================================
+// TELA DE SEMANA
+// ===================================================
+function renderizarTelaSemana() {
+  const sem = SEMANAS[semanaAtual];
+  const datas = datasDaSemana(sem.inicio);
+
+  document.getElementById('titulo-semana').childNodes[0].textContent = `Semana ${sem.num} — `;
+  document.getElementById('periodo-semana').textContent = sem.periodo;
+
+  document.getElementById('btn-sem-ant').disabled = semanaAtual === 0;
+  document.getElementById('btn-prox-sem').disabled = semanaAtual === SEMANAS.length - 1;
+
+  const container = document.getElementById('blocos-semana');
+  container.innerHTML = '';
+
+  datas.forEach((dataIso) => {
+    const d = new Date(dataIso + 'T12:00:00Z');
+    const diaSem = DIAS_SEMANA[d.getUTCDay()];
+    const numDia = d.getUTCDate();
+    const mesAbrev = MESES[d.getUTCMonth()];
+    const diaDados = estado.dias[dataIso] || {};
+
+    const bloco = document.createElement('div');
+    bloco.className = 'bloco-dia';
+
+    // Faixa lateral
+    const faixa = document.createElement('div');
+    faixa.className = 'faixa-lateral';
+    faixa.innerHTML = `
+      <div class="dia-semana">${diaSem}</div>
+      <div class="dia-data">${numDia}</div>
+      <div class="dia-mes">${mesAbrev}</div>
+    `;
+    bloco.appendChild(faixa);
+
+    // Campos
+    const campos = document.createElement('div');
+    campos.className = 'bloco-campos';
+    campos.innerHTML = `
+      <button class="btn-limpar-dia" onclick="limparDia('${dataIso}', this)">Limpar dia</button>
+      <div class="campo-grupo">
+        <label class="campo-label">Cidade</label>
+        <input class="campo-input" type="text" data-key="cidade" data-date="${dataIso}"
+          value="${esc(diaDados.cidade || '')}" placeholder="Informe a cidade…">
+      </div>
+      <div class="campo-grupo">
+        <label class="campo-label">Coordenador responsável</label>
+        <input class="campo-input" type="text" data-key="coordenador" data-date="${dataIso}"
+          value="${esc(diaDados.coordenador || '')}" placeholder="Nome do coordenador…">
+      </div>
+      <div class="campo-grupo">
+        <label class="campo-label">Atividade / Horário</label>
+        <textarea class="campo-textarea" data-key="atividade" data-date="${dataIso}"
+          placeholder="Descreva a atividade e horários…" rows="2">${esc(diaDados.atividade || '')}</textarea>
+      </div>
+    `;
+
+    // Eventos de input
+    campos.querySelectorAll('[data-key]').forEach(el => {
+      el.addEventListener('input', e => {
+        const date = e.target.dataset.date;
+        const key = e.target.dataset.key;
+        if (!estado.dias[date]) estado.dias[date] = {};
+        estado.dias[date][key] = e.target.value;
+        // Remove entrada vazia
+        if (!estado.dias[date].cidade && !estado.dias[date].coordenador && !estado.dias[date].atividade) {
+          delete estado.dias[date];
+        }
+        agendarSalvamento();
+        if (el.tagName === 'TEXTAREA') autoResizeTextarea(el);
+      });
+
+      if (el.tagName === 'TEXTAREA') {
+        autoResizeTextarea(el);
+        el.addEventListener('focus', () => autoResizeTextarea(el));
+      }
+    });
+
+    bloco.appendChild(campos);
+    container.appendChild(bloco);
+  });
+}
+
+function autoResizeTextarea(ta) {
+  ta.style.height = 'auto';
+  ta.style.height = ta.scrollHeight + 'px';
+}
+
+function limparDia(dataIso, btn) {
+  if (!confirm('Apagar todos os dados deste dia?')) return;
+  delete estado.dias[dataIso];
+  salvarEstado();
+  // Limpa os campos visíveis
+  const bloco = btn.closest('.bloco-dia');
+  bloco.querySelectorAll('[data-key]').forEach(el => {
+    el.value = '';
+    if (el.tagName === 'TEXTAREA') autoResizeTextarea(el);
+  });
+}
+
+// ===================================================
+// TELA DE ELEIÇÃO
+// ===================================================
+function renderizarTelaEleicao() {
+  const container = document.getElementById('campos-eleicao');
+  container.innerHTML = '';
+  const el = estado.eleicao || {};
+
+  CAMPOS_ELEICAO.forEach(c => {
+    const grupo = document.createElement('div');
+    grupo.className = 'campo-grupo';
+    const isLonga = c.key === 'observacoes' || c.key === 'equipe';
+    grupo.innerHTML = `
+      <label class="campo-label">${esc(c.label)}</label>
+      ${isLonga
+        ? `<textarea class="campo-textarea" data-el-key="${c.key}" rows="2" placeholder="…">${esc(el[c.key] || '')}</textarea>`
+        : `<input class="campo-input" type="text" data-el-key="${c.key}" value="${esc(el[c.key] || '')}" placeholder="…">`
+      }
+    `;
+    container.appendChild(grupo);
+  });
+
+  container.querySelectorAll('[data-el-key]').forEach(el2 => {
+    el2.addEventListener('input', e => {
+      if (!estado.eleicao) estado.eleicao = {};
+      estado.eleicao[e.target.dataset.elKey] = e.target.value;
+      agendarSalvamento();
+      if (el2.tagName === 'TEXTAREA') autoResizeTextarea(el2);
+    });
+    if (el2.tagName === 'TEXTAREA') autoResizeTextarea(el2);
+  });
+}
+
+// ===================================================
+// EXPORTAR / IMPORTAR
+// ===================================================
+function exportarBackup() {
+  const hoje = new Date().toISOString().slice(0, 10);
+  const blob = new Blob([JSON.stringify(estado, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `planner_leatrice_${hoje}.json`;
+  a.click();
+}
+
+function importarBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const dados = JSON.parse(e.target.result);
+      if (!dados.versao || !dados.dias) throw new Error('Formato inválido');
+      if (!confirm('Substituir todos os dados pelo backup selecionado?')) return;
+      estado = dados;
+      salvarEstado();
+      renderizarVisaoGeral();
+      mostrarTela('visao-geral');
+      alert('Backup importado com sucesso!');
+    } catch(err) {
+      alert('Arquivo inválido ou corrompido.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ===================================================
+// CONECTAR ARQUIVO (File System Access API)
+// ===================================================
+async function conectarArquivo() {
+  try {
+    fileHandle = await window.showSaveFilePicker({
+      suggestedName: 'dados.json',
+      types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }],
+    });
+    await salvarArquivoConectado();
+    alert('Arquivo conectado! Os dados serão gravados diretamente nele (e sincronizados pelo OneDrive).');
+  } catch(e) {
+    if (e.name !== 'AbortError') alert('Não foi possível conectar o arquivo.');
+  }
+}
+
+async function salvarArquivoConectado() {
+  if (!fileHandle) return;
+  try {
+    const writable = await fileHandle.createWritable();
+    await writable.write(JSON.stringify(estado, null, 2));
+    await writable.close();
+  } catch(e) {}
+}
+
+// ===================================================
+// IMPRESSÃO
+// ===================================================
+function imprimirPlanner() {
+  if (telaAtiva !== 'visao-geral') voltarVisaoGeral();
+  setTimeout(() => window.print(), 100);
+}
+
+// ===================================================
+// UTILITÁRIOS
+// ===================================================
+function esc(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ===================================================
+// INICIALIZAÇÃO
+// ===================================================
+// Botão de arquivo conectado (só aparece se API disponível)
+if ('showSaveFilePicker' in window) {
+  document.getElementById('btn-conectar').style.display = '';
+}
+
+// Render inicial
+renderizarVisaoGeral();
+atualizarStatusSalvo();
+</script>
+</body>
+</html>
