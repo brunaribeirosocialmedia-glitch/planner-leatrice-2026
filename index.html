@@ -254,6 +254,9 @@
 
   <!-- TELA SEMANA (página 2: lista de dias) -->
   <div id="tela-semana">
+    <div style="margin-bottom:14px">
+      <button class="btn-voltar" onclick="voltarVisaoGeral()">← Voltar para a visão geral</button>
+    </div>
     <div class="semana-nav">
       <button class="btn btn-outline" id="btn-sem-ant" onclick="navegarSemana(-1)">‹ Anterior</button>
       <h2 id="titulo-semana">Semana <span id="periodo-semana"></span></h2>
@@ -684,29 +687,66 @@ function renderizarTelaSemana() {
     const diaDados = estado.dias[dataIso] || {};
     const horas = diaDados.horas || {};
     const horasPreenchidas = HORAS.filter(h => horas['h' + h.replace(':','')]);
-    const tem = diaDados.cidade || diaDados.coordenador || horasPreenchidas.length > 0;
+    const ro = modoEditor ? '' : 'readonly';
 
     const card = document.createElement('div');
     card.className = 'card-dia';
-    card.onclick = () => abrirDia(dataIso);
 
-    card.innerHTML = `
-      <div class="card-dia-faixa">
-        <div class="ds">${ABREVS[d.getUTCDay()]}</div>
-        <div class="dd">${d.getUTCDate()}</div>
-        <div class="dm">${MESES[d.getUTCMonth()]}</div>
-      </div>
-      <div class="card-dia-corpo">
-        ${tem ? `
-          ${diaDados.cidade      ? `<div class="card-dia-cidade">${esc(diaDados.cidade)}</div>` : ''}
-          ${diaDados.coordenador ? `<div class="card-dia-coord">${esc(diaDados.coordenador)}</div>` : ''}
-          ${horasPreenchidas.length > 0
-            ? `<div class="card-dia-horas">${horasPreenchidas.map(h => esc(h)).join(' · ')}</div>`
-            : ''}
-        ` : `<div class="card-dia-vazio">— sem definição —</div>`}
-      </div>
-      <div class="card-dia-seta">›</div>`;
+    const faixa = document.createElement('div');
+    faixa.className = 'card-dia-faixa';
+    faixa.style.cursor = 'pointer';
+    faixa.innerHTML = `<div class="ds">${ABREVS[d.getUTCDay()]}</div><div class="dd">${d.getUTCDate()}</div><div class="dm">${MESES[d.getUTCMonth()]}</div>`;
+    faixa.onclick = () => abrirDia(dataIso);
 
+    const corpo = document.createElement('div');
+    corpo.className = 'card-dia-corpo';
+    corpo.style.gap = '8px';
+    corpo.innerHTML = `
+      <div style="display:flex;gap:16px;align-items:flex-end;">
+        <div style="flex:1">
+          <label class="campo-label" style="font-size:0.58rem">Cidade</label>
+          <input class="campo-input" type="text" data-key="cidade" data-date="${dataIso}"
+            value="${esc(diaDados.cidade||'')}"
+            placeholder="${modoEditor ? 'Informe a cidade…' : '—'}" ${ro}
+            style="font-size:0.84rem">
+        </div>
+        <div style="flex:1">
+          <label class="campo-label" style="font-size:0.58rem">Coordenador</label>
+          <input class="campo-input" type="text" data-key="coordenador" data-date="${dataIso}"
+            value="${esc(diaDados.coordenador||'')}"
+            placeholder="${modoEditor ? 'Nome do coordenador…' : '—'}" ${ro}
+            style="font-size:0.84rem">
+        </div>
+      </div>
+      ${horasPreenchidas.length > 0
+        ? `<div class="card-dia-horas">${horasPreenchidas.map(h => esc(h)).join(' · ')}</div>`
+        : ''}`;
+
+    const seta = document.createElement('div');
+    seta.className = 'card-dia-seta';
+    seta.style.cursor = 'pointer';
+    seta.innerHTML = '›';
+    seta.title = 'Abrir horários';
+    seta.onclick = () => abrirDia(dataIso);
+
+    if (modoEditor) {
+      corpo.querySelectorAll('[data-key]').forEach(inp => {
+        inp.addEventListener('input', e => {
+          const date = e.target.dataset.date;
+          const key  = e.target.dataset.key;
+          if (!estado.dias[date]) estado.dias[date] = {};
+          estado.dias[date][key] = e.target.value;
+          limparDiaSeVazio(date);
+          agendarSalvamento();
+        });
+        // impede que clique no input abra o dia
+        inp.addEventListener('click', e => e.stopPropagation());
+      });
+    }
+
+    card.appendChild(faixa);
+    card.appendChild(corpo);
+    card.appendChild(seta);
     container.appendChild(card);
   });
 }
