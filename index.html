@@ -108,8 +108,24 @@
   #visao-geral.ativo { display: block; }
   #tela-semana { display: none; }
   #tela-semana.ativo { display: block; }
+  #tela-dia { display: none; }
+  #tela-dia.ativo { display: block; }
   #tela-eleicao { display: none; }
   #tela-eleicao.ativo { display: block; }
+
+  /* ===== CARDS DE DIA (página 2) ===== */
+  .card-dia { display: flex; align-items: stretch; border: 1px solid var(--linha-div); border-radius: 8px; overflow: hidden; margin-bottom: 10px; cursor: pointer; transition: box-shadow 0.15s; }
+  .card-dia:hover { box-shadow: 0 3px 12px rgba(7,63,103,0.12); }
+  .card-dia-faixa { background: var(--laranja); color: #fff; width: 80px; min-width: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px 4px; text-align: center; line-height: 1.3; }
+  .card-dia-faixa .ds { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+  .card-dia-faixa .dd { font-size: 1rem; font-weight: 800; margin-top: 3px; }
+  .card-dia-faixa .dm { font-size: 0.56rem; opacity: 0.85; margin-top: 1px; }
+  .card-dia-corpo { flex: 1; padding: 12px 16px; background: #fff; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+  .card-dia-cidade { font-size: 0.85rem; font-weight: 700; color: var(--azul-escuro); }
+  .card-dia-coord  { font-size: 0.73rem; color: var(--cinza-linha); }
+  .card-dia-horas  { font-size: 0.7rem; color: var(--azul); margin-top: 2px; }
+  .card-dia-vazio  { font-size: 0.73rem; color: var(--cinza-linha); font-style: italic; }
+  .card-dia-seta   { display: flex; align-items: center; padding: 0 14px; color: var(--cinza-linha); font-size: 1.1rem; }
 
   /* ===== NAV SEMANA ===== */
   .semana-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 8px; }
@@ -236,17 +252,22 @@
     <div class="grade-semanas" id="grade-semanas"></div>
   </div>
 
-  <!-- TELA SEMANA -->
+  <!-- TELA SEMANA (página 2: lista de dias) -->
   <div id="tela-semana">
-    <div style="margin-bottom:14px">
-      <button class="btn-voltar" onclick="voltarVisaoGeral()">← Voltar para a visão geral</button>
-    </div>
     <div class="semana-nav">
-      <button class="btn btn-outline" id="btn-sem-ant" onclick="navegarSemana(-1)">‹ Semana anterior</button>
+      <button class="btn btn-outline" id="btn-sem-ant" onclick="navegarSemana(-1)">‹ Anterior</button>
       <h2 id="titulo-semana">Semana <span id="periodo-semana"></span></h2>
-      <button class="btn btn-outline" id="btn-prox-sem" onclick="navegarSemana(1)">Próxima semana ›</button>
+      <button class="btn btn-outline" id="btn-prox-sem" onclick="navegarSemana(1)">Próxima ›</button>
     </div>
-    <div id="blocos-semana"></div>
+    <div id="cards-dias"></div>
+  </div>
+
+  <!-- TELA DIA (página 3: horários do dia) -->
+  <div id="tela-dia">
+    <div style="margin-bottom:14px">
+      <button class="btn-voltar" id="btn-voltar-semana" onclick="voltarTelaSemana()">← Voltar para a semana</button>
+    </div>
+    <div id="conteudo-dia"></div>
   </div>
 
   <!-- TELA ELEIÇÃO -->
@@ -486,8 +507,10 @@ function atualizarStatusSalvo(tipo) {
 // ===================================================
 // NAVEGAÇÃO
 // ===================================================
+let diaAtual = null; // ISO string do dia aberto
+
 function mostrarTela(tela) {
-  ['visao-geral','tela-semana','tela-eleicao'].forEach(id =>
+  ['visao-geral','tela-semana','tela-dia','tela-eleicao'].forEach(id =>
     document.getElementById(id).classList.remove('ativo'));
   document.getElementById(tela).classList.add('ativo');
   telaAtiva = tela;
@@ -496,6 +519,7 @@ function mostrarTela(tela) {
 function reRenderTela() {
   if (telaAtiva === 'visao-geral') renderizarVisaoGeral();
   else if (telaAtiva === 'tela-semana') renderizarTelaSemana();
+  else if (telaAtiva === 'tela-dia') renderizarTelaDia();
   else if (telaAtiva === 'tela-eleicao') renderizarTelaEleicao();
 }
 
@@ -503,6 +527,13 @@ function abrirSemana(idx) {
   semanaAtual = idx;
   renderizarTelaSemana();
   mostrarTela('tela-semana');
+  window.scrollTo(0, 0);
+}
+
+function abrirDia(dataIso) {
+  diaAtual = dataIso;
+  renderizarTelaDia();
+  mostrarTela('tela-dia');
   window.scrollTo(0, 0);
 }
 
@@ -516,8 +547,13 @@ function voltarVisaoGeral() {
   renderizarVisaoGeral();
   mostrarTela('visao-geral');
   window.scrollTo(0, 0);
-  // Retomar sync se necessário
   if (!modoEditor && !syncInterval) iniciarSync();
+}
+
+function voltarTelaSemana() {
+  renderizarTelaSemana();
+  mostrarTela('tela-semana');
+  window.scrollTo(0, 0);
 }
 
 function navegarSemana(delta) {
@@ -531,6 +567,7 @@ function navegarSemana(delta) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     if (document.getElementById('modal-token').classList.contains('visivel')) fecharModal();
+    else if (telaAtiva === 'tela-dia') voltarTelaSemana();
     else if (telaAtiva !== 'visao-geral') voltarVisaoGeral();
   }
 });
@@ -628,6 +665,9 @@ function renderizarVisaoGeral() {
 // ===================================================
 // TELA SEMANA
 // ===================================================
+// ===================================================
+// PÁGINA 2 — LISTA DE DIAS DA SEMANA
+// ===================================================
 function renderizarTelaSemana() {
   const sem = SEMANAS[semanaAtual];
   const datas = datasDaSemana(sem.inicio);
@@ -636,93 +676,125 @@ function renderizarTelaSemana() {
   document.getElementById('btn-sem-ant').disabled = semanaAtual === 0;
   document.getElementById('btn-prox-sem').disabled = semanaAtual === SEMANAS.length - 1;
 
-  const container = document.getElementById('blocos-semana');
+  const container = document.getElementById('cards-dias');
   container.innerHTML = '';
 
   datas.forEach(dataIso => {
     const d = new Date(dataIso + 'T12:00:00Z');
     const diaDados = estado.dias[dataIso] || {};
     const horas = diaDados.horas || {};
-    const ro = modoEditor ? '' : 'readonly';
+    const horasPreenchidas = HORAS.filter(h => horas['h' + h.replace(':','')]);
+    const tem = diaDados.cidade || diaDados.coordenador || horasPreenchidas.length > 0;
 
-    const bloco = document.createElement('div');
-    bloco.className = 'bloco-dia';
+    const card = document.createElement('div');
+    card.className = 'card-dia';
+    card.onclick = () => abrirDia(dataIso);
 
-    // Faixa lateral laranja
-    const faixa = document.createElement('div');
-    faixa.className = 'faixa-lateral';
-    faixa.innerHTML = `<div class="dia-semana">${DIAS_SEMANA[d.getUTCDay()]}</div><div class="dia-data">${d.getUTCDate()}</div><div class="dia-mes">${MESES[d.getUTCMonth()]}</div>`;
-    bloco.appendChild(faixa);
-
-    // Área de campos
-    const campos = document.createElement('div');
-    campos.className = 'bloco-campos';
-
-    // Cabeçalho: cidade + coordenador
-    const cab = document.createElement('div');
-    cab.className = 'bloco-cabecalho';
-    cab.innerHTML = `
-      <div class="campo-grupo">
-        <label class="campo-label">Cidade</label>
-        <input class="campo-input" type="text" data-key="cidade" data-date="${dataIso}" value="${esc(diaDados.cidade||'')}" placeholder="${modoEditor ? 'Informe a cidade…' : ''}" ${ro}>
+    card.innerHTML = `
+      <div class="card-dia-faixa">
+        <div class="ds">${ABREVS[d.getUTCDay()]}</div>
+        <div class="dd">${d.getUTCDate()}</div>
+        <div class="dm">${MESES[d.getUTCMonth()]}</div>
       </div>
-      <div class="campo-grupo">
-        <label class="campo-label">Coordenador responsável</label>
-        <input class="campo-input" type="text" data-key="coordenador" data-date="${dataIso}" value="${esc(diaDados.coordenador||'')}" placeholder="${modoEditor ? 'Nome do coordenador…' : ''}" ${ro}>
+      <div class="card-dia-corpo">
+        ${tem ? `
+          ${diaDados.cidade      ? `<div class="card-dia-cidade">${esc(diaDados.cidade)}</div>` : ''}
+          ${diaDados.coordenador ? `<div class="card-dia-coord">${esc(diaDados.coordenador)}</div>` : ''}
+          ${horasPreenchidas.length > 0
+            ? `<div class="card-dia-horas">${horasPreenchidas.map(h => esc(h)).join(' · ')}</div>`
+            : ''}
+        ` : `<div class="card-dia-vazio">— sem definição —</div>`}
       </div>
-      <button class="btn-limpar-dia" onclick="limparDia('${dataIso}', this)" ${modoEditor ? '' : 'disabled'}>Limpar dia</button>`;
-    campos.appendChild(cab);
+      <div class="card-dia-seta">›</div>`;
 
-    // Grade de horários
-    const grade = document.createElement('div');
-    grade.className = 'grade-horas';
-    HORAS.forEach(hora => {
-      const chave = 'h' + hora.replace(':','');
-      const linha = document.createElement('div');
-      linha.className = 'linha-hora';
-      linha.innerHTML = `
-        <div class="celula-hora">${hora}</div>
-        <div class="celula-atividade">
-          <input type="text" data-hora="${chave}" data-date="${dataIso}" value="${esc(horas[chave]||'')}" placeholder="${modoEditor ? '…' : ''}" ${ro}>
-        </div>`;
-      grade.appendChild(linha);
-    });
-    campos.appendChild(grade);
-
-    // Eventos de edição
-    if (modoEditor) {
-      // campos de cabeçalho
-      cab.querySelectorAll('[data-key]').forEach(inp => {
-        inp.addEventListener('input', e => {
-          const date = e.target.dataset.date;
-          const key  = e.target.dataset.key;
-          if (!estado.dias[date]) estado.dias[date] = {};
-          estado.dias[date][key] = e.target.value;
-          limparDiaSeVazio(date);
-          agendarSalvamento();
-        });
-      });
-      // campos de hora
-      grade.querySelectorAll('[data-hora]').forEach(inp => {
-        inp.addEventListener('input', e => {
-          const date = e.target.dataset.date;
-          const chave = e.target.dataset.hora;
-          if (!estado.dias[date]) estado.dias[date] = {};
-          if (!estado.dias[date].horas) estado.dias[date].horas = {};
-          if (e.target.value) {
-            estado.dias[date].horas[chave] = e.target.value;
-          } else {
-            delete estado.dias[date].horas[chave];
-          }
-          limparDiaSeVazio(date);
-          agendarSalvamento();
-        });
-      });
-    }
-
-    bloco.appendChild(campos);
-    container.appendChild(bloco);
+    container.appendChild(card);
   });
+}
+
+// ===================================================
+// PÁGINA 3 — HORÁRIOS DE UM DIA
+// ===================================================
+function renderizarTelaDia() {
+  const dataIso = diaAtual;
+  const d = new Date(dataIso + 'T12:00:00Z');
+  const sem = SEMANAS[semanaAtual];
+  const diaDados = estado.dias[dataIso] || {};
+  const horas = diaDados.horas || {};
+  const ro = modoEditor ? '' : 'readonly';
+
+  document.getElementById('btn-voltar-semana').textContent = `← Semana ${sem.num} — ${sem.periodo}`;
+
+  const container = document.getElementById('conteudo-dia');
+  container.innerHTML = '';
+
+  // Título do dia
+  const titulo = document.createElement('div');
+  titulo.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;';
+  titulo.innerHTML = `
+    <h2 style="font-size:1rem;color:var(--azul-escuro);">
+      ${DIAS_SEMANA[d.getUTCDay()]}, ${d.getUTCDate()} de ${MESES[d.getUTCMonth()].replace('ago','agosto').replace('set','setembro').replace('out','outubro')}
+    </h2>
+    <button class="btn-limpar-dia" onclick="limparDia('${dataIso}')" ${modoEditor ? '' : 'disabled'}>Limpar dia</button>`;
+  container.appendChild(titulo);
+
+  // Bloco cidade + coordenador
+  const cab = document.createElement('div');
+  cab.style.cssText = 'display:flex;gap:20px;margin-bottom:16px;padding:14px 16px;border:1px solid var(--linha-div);border-radius:8px;background:#fff;';
+  cab.innerHTML = `
+    <div style="flex:1">
+      <label class="campo-label">Cidade</label>
+      <input class="campo-input" type="text" data-key="cidade" data-date="${dataIso}" value="${esc(diaDados.cidade||'')}" placeholder="${modoEditor ? 'Informe a cidade…' : ''}" ${ro}>
+    </div>
+    <div style="flex:1">
+      <label class="campo-label">Coordenador responsável</label>
+      <input class="campo-input" type="text" data-key="coordenador" data-date="${dataIso}" value="${esc(diaDados.coordenador||'')}" placeholder="${modoEditor ? 'Nome do coordenador…' : ''}" ${ro}>
+    </div>`;
+  container.appendChild(cab);
+
+  // Grade de horários
+  const gradeWrap = document.createElement('div');
+  gradeWrap.style.cssText = 'border:1px solid var(--linha-div);border-radius:8px;overflow:hidden;';
+  const grade = document.createElement('div');
+  grade.className = 'grade-horas';
+  HORAS.forEach(hora => {
+    const chave = 'h' + hora.replace(':','');
+    const linha = document.createElement('div');
+    linha.className = 'linha-hora';
+    linha.innerHTML = `
+      <div class="celula-hora">${hora}</div>
+      <div class="celula-atividade">
+        <input type="text" data-hora="${chave}" data-date="${dataIso}" value="${esc(horas[chave]||'')}" placeholder="${modoEditor ? '…' : ''}" ${ro}>
+      </div>`;
+    grade.appendChild(linha);
+  });
+  gradeWrap.appendChild(grade);
+  container.appendChild(gradeWrap);
+
+  // Eventos de edição
+  if (modoEditor) {
+    cab.querySelectorAll('[data-key]').forEach(inp => {
+      inp.addEventListener('input', e => {
+        const date = e.target.dataset.date;
+        const key  = e.target.dataset.key;
+        if (!estado.dias[date]) estado.dias[date] = {};
+        estado.dias[date][key] = e.target.value;
+        limparDiaSeVazio(date);
+        agendarSalvamento();
+      });
+    });
+    grade.querySelectorAll('[data-hora]').forEach(inp => {
+      inp.addEventListener('input', e => {
+        const date = e.target.dataset.date;
+        const chave = e.target.dataset.hora;
+        if (!estado.dias[date]) estado.dias[date] = {};
+        if (!estado.dias[date].horas) estado.dias[date].horas = {};
+        if (e.target.value) estado.dias[date].horas[chave] = e.target.value;
+        else delete estado.dias[date].horas[chave];
+        limparDiaSeVazio(date);
+        agendarSalvamento();
+      });
+    });
+  }
 }
 
 function limparDiaSeVazio(date) {
@@ -732,13 +804,12 @@ function limparDiaSeVazio(date) {
   if (!d.cidade && !d.coordenador && !temHoras) delete estado.dias[date];
 }
 
-function limparDia(dataIso, btn) {
+function limparDia(dataIso) {
   if (!modoEditor) return;
   if (!confirm('Apagar todos os dados deste dia?')) return;
   delete estado.dias[dataIso];
   salvarEstado();
-  const bloco = btn.closest('.bloco-dia');
-  bloco.querySelectorAll('input[data-key], input[data-hora]').forEach(el => el.value = '');
+  renderizarTelaDia();
 }
 
 // ===================================================
