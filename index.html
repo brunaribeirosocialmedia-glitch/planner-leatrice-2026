@@ -147,6 +147,9 @@
   .campo-input { width: 100%; font-family: inherit; font-size: 0.84rem; color: var(--azul-escuro); border: none; border-bottom: 1.5px solid var(--cinza-linha); border-radius: 0; background: transparent; padding: 4px 0; outline: none; transition: border-color 0.15s; }
   .campo-input:focus { border-bottom-color: var(--azul); }
   .campo-input[readonly] { color: var(--azul-escuro); cursor: default; border-bottom-color: var(--linha-div); }
+  .campo-textarea { width: 100%; font-family: inherit; font-size: 0.84rem; color: var(--azul-escuro); border: none; border-bottom: 1.5px solid var(--cinza-linha); background: transparent; padding: 4px 0; outline: none; resize: none; overflow: hidden; min-height: 30px; line-height: 1.5; transition: border-color 0.15s; }
+  .campo-textarea:focus { border-bottom-color: var(--azul); }
+  .campo-textarea[readonly] { cursor: default; border-bottom-color: var(--linha-div); }
   .btn-limpar-dia { font-family: inherit; font-size: 0.63rem; color: var(--cinza-linha); background: none; border: 1px solid var(--linha-div); border-radius: 4px; padding: 3px 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.04em; transition: color 0.15s, border-color 0.15s; white-space: nowrap; align-self: flex-start; margin-top: 2px; }
   .btn-limpar-dia:hover { color: #c0392b; border-color: #c0392b; }
   .btn-limpar-dia:disabled { display: none; }
@@ -843,6 +846,8 @@ function renderizarTelaDia() {
     });
   }
 }
+
+function autoResize(ta) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
 
 function limparDiaSeVazio(date) {
   const d = estado.dias[date];
